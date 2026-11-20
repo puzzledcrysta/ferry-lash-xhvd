@@ -1,0 +1,16 @@
+/* 首轴位置 · 系固条数 */
+:root {
+  color-scheme: light;
+  --bg: #e6edf0; --rail: #19323d; --accent: #136076; --ink: #102a35;
+  --panel: color-mix(in srgb, var(--bg) 91%, white);
+  --line: color-mix(in srgb, var(--ink) 24%, var(--bg));
+  --mute: color-mix(in srgb, var(--ink) 78%, var(--bg));
+  --th: color-mix(in srgb, var(--panel) 84%, var(--accent));
+  --rail-ink: #f2f0e9;
+  --primary: #fff;
+  --bad: #832635;
+  --ui: Verdana, sans-serif; --mono: ui-monospace, Menlo, monospace;
+  --pad: 19px; --row: 39px; --gap: 19px;
+  --figure: 24px; --title: 45px; --graph: 66px;
+  --scroll: 396px;
+}
