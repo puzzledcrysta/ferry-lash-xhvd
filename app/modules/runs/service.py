@@ -3,7 +3,9 @@ from datetime import datetime, timezone
 from time import perf_counter
 from app.manifest import manifest
 from app.pipeline import execute
-from .repository import fetch, persist
+from app.store import connection
+from app.modules.quality.resolutions import apply_view, latest
+from .repository import fetch, persist, lookup
 
 
 def run(source,book):
@@ -13,8 +15,8 @@ def run(source,book):
     created = datetime.now(timezone.utc).isoformat()
     proof.update(elapsed_ms=round((perf_counter()-started)*1000,2),created=created)
     result['manifest'] = proof
-    stored = persist(proof['run_id'],source,book,result,created)
-    return json.loads(stored['result'])
+    persist(proof['run_id'],source,book,result,created)
+    return get(proof['run_id'])
 
 
 def replay(run_id):
@@ -23,4 +25,9 @@ def replay(run_id):
 
 
 def get(run_id):
-    return json.loads(fetch(run_id)['result'])
+    with connection() as db:
+        record = lookup(db,run_id)
+        result = json.loads(record['result'])
+        book = record['book']
+        resolutions = latest(db,run_id)
+    return apply_view(result,book,resolutions)

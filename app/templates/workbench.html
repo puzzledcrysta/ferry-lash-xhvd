@@ -29,6 +29,7 @@
       <output class="notice" id="notice" role="status" aria-live="polite"></output></form></section>
 <section class="panel results" aria-labelledby="phase"><div class="panel__head">
       <h2 id="phase">{{ tabs.domain }}</h2><span id="run-id" class="num"></span></div>
+      <div id="conflicts"></div>
       <div class="scroll" id="grid-data"><p class="empty">载入班次样例开始复算</p></div>
       <form id="review" class="panel__body" hidden>
         <label>复核意见<textarea id="review-note" maxlength="500"></textarea></label>
@@ -40,5 +41,5 @@
     <div class="panel__body" id="signal" aria-live="polite"><p class="empty">运行后选择一条记录</p></div>
     </section>  </div></main><footer class="statusbar"><span id="state">待运行</span>
   <a href="/docs">接口</a><span>UTC</span></footer></div></div>
-  <script type="application/json" id="settings">{{ {'reasons': reasons, 'tabs': tabs, 'unit': unit}|tojson }}</script>
+  <script type="application/json" id="settings">{{ {'reasons': reasons, 'tabs': tabs, 'unit': unit, 'key': key, 'fields': fields}|tojson }}</script>
 </body></html>

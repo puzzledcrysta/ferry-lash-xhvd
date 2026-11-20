@@ -69,6 +69,87 @@ function inspect(row) {
   return cell;
 }
 
+function conflictPanel(group) {
+  const form = el('form', undefined, 'conflict');
+  const head = el('div', undefined, 'conflict__head');
+  head.append(el('h3', `${settings.key} ${group.key} · 修订 ${group.revision}`));
+  head.append(el('span', group.released ? `已放行 · 采信版本 ${group.adopted.version}` : '待核清',
+                 group.released ? 'state' : 'state problem'));
+  form.append(head);
+  if (group.released) {
+    form.append(el('p', `采信结果以第 ${group.adopted.line} 行为基形成，未采信来源已列入抑制。复核意见：${group.adopted.note}`,
+                   'conflict__summary'));
+  }
+  const holder = el('div', undefined, 'scroll');
+  const columns = [['行号', 'line', 'num'], ['提交 UTC', 'time'],
+    ...settings.fields.map(field => [field, row => {
+      const cell = el('span', row.fields[field]);
+      if (group.disputed.includes(field)) cell.className = 'disputed';
+      return cell;
+    }]),
+    ['备注', 'note']];
+  table(holder, columns, group.candidates);
+  form.append(holder);
+  const pickers = el('div', undefined, 'conflict__picks');
+  for (const field of group.disputed) {
+    const select = el('select');
+    select.name = field;
+    select.setAttribute('aria-label', `${field} 采信来源`);
+    const placeholder = el('option', '选择来源行');
+    placeholder.value = '';
+    select.append(placeholder);
+    for (const candidate of group.candidates) {
+      const option = el('option', `第 ${candidate.line} 行 · ${candidate.fields[field]}`);
+      option.value = candidate.line;
+      select.append(option);
+    }
+    if (group.released) select.value = String(group.adopted.picks[field]);
+    const label = el('label');
+    label.append(el('span', `争议字段 · ${field}`), select);
+    pickers.append(label);
+  }
+  form.append(pickers);
+  const note = el('textarea');
+  note.maxLength = 500;
+  note.placeholder = '复核意见（采信依据）';
+  if (group.released) note.value = group.adopted.note;
+  form.append(note);
+  const submit = el('button', group.released ? '切换采信' : '核清并放行', 'btn btn--primary');
+  submit.type = 'submit';
+  const actions = el('div', undefined, 'actions');
+  actions.append(submit);
+  form.append(actions);
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const picks = {};
+    for (const field of group.disputed) {
+      const value = form.elements[field].value;
+      if (value === '') {
+        notice(`争议字段 ${field} 未核清，不能放行`, true);
+        return;
+      }
+      picks[field] = Number(value);
+    }
+    submit.disabled = true;
+    try {
+      const report = await query(`/api/quality/resolve/${result.manifest.run_id}`, {
+        key: group.key,
+        version: group.released ? group.adopted.version : 0,
+        picks,
+        note: note.value,
+      });
+      setRun(report);
+      notice(group.released ? '采信已切换' : '采信已登记，车辆放行计入');
+      await render();
+    } catch (error) {
+      notice(error.message, true);
+    } finally {
+      submit.disabled = false;
+    }
+  });
+  return form;
+}
+
 function setRun(report) {
   result = report;
   byId('created').textContent = `${report.manifest.created.slice(0, 19).replace('T', ' ')} UTC`;
@@ -88,6 +169,7 @@ async function render() {
   const stage = selected;
   byId('phase').textContent = settings.tabs[stage];
   byId('review').hidden = true;
+  byId('conflicts').replaceChildren();
   for (const link of links) {
     if (link.dataset.module === stage) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
@@ -95,7 +177,12 @@ async function render() {
   if (!result) return;
   const id = result.manifest.run_id;
   const raw = row => evidence('来源字段', row.raw);
-  const key = ['业务键', 'key'];
+  const key = ['业务键', row => {
+    if (!row.adopted) return row.key;
+    const cell = el('span');
+    cell.append(row.key, ' ', el('span', '采信', 'state'));
+    return cell;
+  }];
   const line = ['行号', 'line', 'num'];
   try {
     let view, rows;
@@ -105,6 +192,8 @@ async function render() {
     } else if (stage === 'quality') {
       view = [key, line, ['判定', row => tag(row.code)], ['说明', 'detail'], ['字段', raw]];
       rows = [...result.quarantine, ...result.suppressed].sort((a,b) => a.line-b.line);
+      const box = byId('conflicts');
+      for (const group of result.conflicts || []) box.append(conflictPanel(group));
     } else if (stage === 'reconcile') {
       view = [key, ['实际', 'amount', 'num'], ['外部账', 'reference', 'num'], ['差值', 'delta', 'num'], ['外部行', 'book_line', 'num'], ['结论', row => tag(row.code)]];
       rows = [...result.book.rows].sort((a,b) => Number(a.code === 'MATCH') - Number(b.code === 'MATCH'));

@@ -100,6 +100,15 @@ h2 { margin: 0; font-size: 14px; }
 .readout span:empty { display:none; }
 
 .kpis > .kpi:nth-child(3) { border-inline-start: 2px solid var(--accent); }
+.conflict { display: grid; gap: 10px; padding: 14px; border-block-end: 2px solid #cddfe5; }
+.conflict__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.conflict__head h3 { margin: 0; font-size: 13px; }
+.conflict__summary { margin: 0; color: var(--mute); font-size: 12px; }
+.conflict__picks { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 8px; }
+.conflict__picks label { display: grid; gap: 3px; font-size: 12px; color: var(--mute); }
+.conflict .scroll { max-height: calc(var(--row) * 4); }
+.conflict textarea { min-height: 44px; }
+.disputed { color: var(--bad); font-weight: 700; }
 .topbar > span { font: 12px var(--mono); text-transform: uppercase; }
 .results td:first-child { border-inline-start: 4px solid #a4bdc7; }
 .loadcard .track { transform-origin: left; transform: skewX(-13deg); }

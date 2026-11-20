@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from app.errors import DataError
 from app.store import connection
 from app.modules.runs.repository import lookup
+from app.modules.quality.resolutions import apply_view, latest
 
 
 def timeline(run_id):
@@ -17,7 +18,8 @@ def decide(run_id,version,decision,note):
         raise DataError('REVIEW_DECISION','复核结论无效')
     with connection() as db:
         db.execute('BEGIN IMMEDIATE')
-        run = json.loads(lookup(db,run_id)['result'])
+        record = lookup(db,run_id)
+        run = apply_view(json.loads(record['result']),record['book'],latest(db,run_id))
         current = db.execute('SELECT COALESCE(MAX(version),0) FROM reviews WHERE run_id=?',(run_id,)).fetchone()[0]
         if current != version:
             raise DataError('STALE','复核版本已过期，请刷新',409)

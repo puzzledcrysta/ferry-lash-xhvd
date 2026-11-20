@@ -9,4 +9,7 @@ REASONS = {
     'AMOUNT_DELTA': '复算与外部账计量不同', 'BOOK_CONFLICT': '独立账含重复业务键',
     'RUN_UNKNOWN': '没有此批次', 'DEMO_UNKNOWN': '没有此样例', 'STALE': '复核版本已过期',
     'REVIEW_NOTE': '有差异时须填写复核意见', 'REVIEW_DECISION': '复核结论无效',
+    'NOT_ADOPTED': '复核未采信的来源', 'RESOLUTION_PICKS': '争议字段须逐项核清',
+    'RESOLUTION_SOURCE': '采信来源行无效', 'RESOLUTION_NOTE': '采信结论须填写复核意见',
+    'CONFLICT_UNKNOWN': '没有此争议记录',
 }

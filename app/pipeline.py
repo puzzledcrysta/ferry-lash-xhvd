@@ -26,4 +26,5 @@ def execute(source,book):
     if not balanced:
         raise RuntimeError('来源记录数量无法闭合')
     return {'counts':counts,'balanced':balanced,'accepted':accepted,'quarantine':bad,'suppressed':suppressed,
-            'reasons':distribution(bad),'book':compare(accepted,book),'encoding':raw['encoding']}
+            'reasons':distribution(bad),'book':compare(accepted,book),'encoding':raw['encoding'],
+            'conflicts':result['quality']['conflicts']}
